@@ -1,0 +1,12 @@
+let
+    Source = Csv.Document(File.Contents("C:\Users\DELL\Desktop\Ski+Resorts\snow.csv"),[Delimiter=",", Columns=4, Encoding=1252, QuoteStyle=QuoteStyle.None]),
+    #"Promoted Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"Month", type date}, {"Latitude", type number}, {"Longitude", type number}, {"Snow", type number}}),
+    #"Inserted Month Name" = Table.AddColumn(#"Changed Type", "Month Name", each Date.MonthName([Month]), type text),
+    #"Extracted First Characters" = Table.TransformColumns(#"Inserted Month Name", {{"Month Name", each Text.Start(_, 3), type text}}),
+    #"Uppercased Text" = Table.TransformColumns(#"Extracted First Characters",{{"Month Name", Text.Upper, type text}}),
+    #"Merged Queries" = Table.NestedJoin(#"Uppercased Text", {"Latitude", "Longitude"}, resorts, {"Latitude_lookup", "Longitude_lookup"}, "resorts", JoinKind.LeftOuter),
+    #"Expanded resorts" = Table.ExpandTableColumn(#"Merged Queries", "resorts", {"ID", "Resort"}, {"ID", "Resort"}),
+    #"Filtered Rows" = Table.SelectRows(#"Expanded resorts", each ([ID] <> null))
+in
+    #"Filtered Rows"

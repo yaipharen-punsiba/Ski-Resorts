@@ -1,0 +1,24 @@
+let
+    Source = Csv.Document(File.Contents("C:\Users\DELL\Desktop\Ski+Resorts\resorts.csv"),[Delimiter=",", Columns=25, Encoding=1252, QuoteStyle=QuoteStyle.None]),
+    #"Promoted Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+    #"Duplicated Column" = Table.DuplicateColumn(#"Promoted Headers", "Latitude", "Latitude - Copy"),
+    #"Split Column by Delimiter" = Table.SplitColumn(#"Duplicated Column", "Latitude - Copy", Splitter.SplitTextByDelimiter(".", QuoteStyle.Csv), {"Latitude - Copy.1", "Latitude - Copy.2"}),
+    #"Extracted First Characters" = Table.TransformColumns(#"Split Column by Delimiter", {{"Latitude - Copy.2", each Text.Start(_, 3), type text}}),
+    #"Changed Type" = Table.TransformColumnTypes(#"Extracted First Characters",{{"Latitude - Copy.2", type number}}),
+    #"Added Conditional Column" = Table.AddColumn(#"Changed Type", "Custom", each if [#"Latitude - Copy.2"] < 250 then 125 else if [#"Latitude - Copy.2"] < 500 then 375 else if [#"Latitude - Copy.2"] < 750 then 625 else 875),
+    #"Merged Columns" = Table.CombineColumns(Table.TransformColumnTypes(#"Added Conditional Column", {{"Custom", type text}}, "en-US"),{"Latitude - Copy.1", "Custom"},Combiner.CombineTextByDelimiter(".", QuoteStyle.None),"Merged"),
+    #"Renamed Columns" = Table.RenameColumns(#"Merged Columns",{{"Merged", "Latitude_lookup"}}),
+    #"Removed Columns" = Table.RemoveColumns(#"Renamed Columns",{"Latitude - Copy.2"}),
+    #"Duplicated Column1" = Table.DuplicateColumn(#"Removed Columns", "Longitude", "Longitude - Copy"),
+    #"Split Column by Delimiter1" = Table.SplitColumn(#"Duplicated Column1", "Longitude - Copy", Splitter.SplitTextByDelimiter(".", QuoteStyle.Csv), {"Longitude - Copy.1", "Longitude - Copy.2"}),
+    #"Extracted First Characters1" = Table.TransformColumns(#"Split Column by Delimiter1", {{"Longitude - Copy.2", each Text.Start(_, 3), type text}}),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Extracted First Characters1",{{"Longitude - Copy.2", type number}}),
+    #"Added Conditional Column1" = Table.AddColumn(#"Changed Type1", "Custom", each if [#"Longitude - Copy.2"] < 250 then 125 else if [#"Longitude - Copy.2"] < 500 then 375 else if [#"Longitude - Copy.2"] < 750 then 625 else 875),
+    #"Merged Columns1" = Table.CombineColumns(Table.TransformColumnTypes(#"Added Conditional Column1", {{"Custom", type text}}, "en-US"),{"Longitude - Copy.1", "Custom"},Combiner.CombineTextByDelimiter(".", QuoteStyle.None),"Merged"),
+    #"Renamed Columns1" = Table.RenameColumns(#"Merged Columns1",{{"Merged", "Longitude_lookup"}}),
+    #"Changed Type2" = Table.TransformColumnTypes(#"Renamed Columns1",{{"Longitude_lookup", type number}}),
+    #"Removed Columns1" = Table.RemoveColumns(#"Changed Type2",{"Longitude - Copy.2"}),
+    #"Changed Type3" = Table.TransformColumnTypes(#"Removed Columns1",{{"ID", Int64.Type}, {"Latitude", type number}, {"Longitude", type number}, {"Price", Currency.Type}, {"Highest point", type number}, {"Lowest point", type number}, {"Beginner slopes", type number}, {"Intermediate slopes", type number}, {"Difficult slopes", type number}, {"Total slopes", type number}, {"Longest run", type number}, {"Snow cannons", Int64.Type}, {"Surface lifts", Int64.Type}, {"Chair lifts", Int64.Type}, {"Gondola lifts", Int64.Type}, {"Total lifts", Int64.Type}, {"Lift capacity", Int64.Type}, {"Latitude_lookup", type number}}),
+    #"Replaced Value" = Table.ReplaceValue(#"Changed Type3",0,null,Replacer.ReplaceValue,{"Price"})
+in
+    #"Replaced Value"
