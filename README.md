@@ -33,4 +33,7 @@ The goal here is to make, for Skiers, Skiing enthusiasts and families, an easy-t
 Although the new tweak in the latitude and longitude values are informative, it doesn't represent 100% accurate snow cover percentage.
 Thank you so much for your time in getting to learn about this project.
 
+## Prerequisites/Dependencies
+1. The ***Data sources settings*** to need to be changed to proper locations where the relevant files and folders (data sources) are saved/located.
+
 #powerquery #datamodeling #powerBI #datavisualization #dataanalysis
